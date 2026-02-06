@@ -1,4 +1,6 @@
-def argument_parse():
+import argparse
+
+def argument_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="smarthunter",
         usage="smarthunter [options] <pattern>",
