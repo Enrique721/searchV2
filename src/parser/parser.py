@@ -1,8 +1,8 @@
+from src.db.db_operation import DatabaseOperation
 import re
 import datetime
 from optparse import Option
 from typing import Iterator, Tuple, Optional
-from src.db.db_operation import DatabaseOperation
 
 class Parser():
 
@@ -14,8 +14,9 @@ class Parser():
     re_patterns = [
         # <URL, ?>(" " | ":")<USER | EMAIL>(" " | ":")<PASSWORD>
         # Adicionar suporte para o delimitador , e -
-        re.compile(r'(?:(https?:\/\/[^\s:]+)\s*[:\s]+)?([^\s:@]+(?:@[^\s:]+)?)\s*[:\s]+\s*([^\s]\ +)'), 
-        #
+        re.compile(
+            r'^(?:(https?:\/\/[^\s:/]+)\s*[:\s]+)?([a-zA-Z0-9._-]+(?:@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})?)\s*[:\s]+\s*([^\s\x00-\x1F\x7F█╔╗╝╚═]+)$'
+        ),
         # <Link: <URL>, ?, i>
         # <User: <USER | EMAIL>, i>
         # <Password: <PASSWORD>, i>
@@ -33,27 +34,31 @@ class Parser():
 
     def main_processing_method(self):
         for file in self.file_iterator:
-            self.process_file(file)
+            self.__process_file(file)
 
-    def process_file(self, file: str, chunk_size: int = 800000):
+    def __process_file(self, file: str, chunk_size: int = 800000):
 
         with open(file, 'r') as f:
-
             chunk = []
             for line in f:
                 credential_instance = self.__extract_line_data(line)
-                if credential_instance is dict:
+                if credential_instance is not None:
                     chunk.append( credential_instance )
 
                 if len(chunk) >= chunk_size:
-                    return
+                    print(chunk)
+
+            if (len(chunk) != 0):
+                print("chunk size: ", end="")
+                print(len(chunk))
 
     def __extract_line_data(self, line) -> Optional[dict]:
 
-        for re_compiled_pattern in Parser.re_patterns:
+        for i, re_compiled_pattern in enumerate(Parser.re_patterns):
 
             line_parsed = re_compiled_pattern.search(line)
-            if line_parsed:
+
+            if line_parsed and len(line_parsed.groups()) > 0:
                 url, user, password = line_parsed.groups()
 
                 self.__credential_formatting(
@@ -68,10 +73,12 @@ class Parser():
 
                 credential_instance =  {
                         "url": url,
+                        "date": datetime.datetime.now(),
                         "user": user,
                         "password": password,
-                        "data_de_cadastro": datetime.datetime.now(),
-                        "valido": True
+                        "group": "askdjl",
+                        "compromised_date": datetime.datetime.now(),
+                        "arguments": []
                     }
                 return credential_instance
 

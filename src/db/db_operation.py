@@ -4,8 +4,18 @@ import os
 import sys
 import sqlite3
 from pathlib import Path
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, TypedDict
 from src.default_config.default_config import config
+
+class BulkOperationItem(TypedDict):
+    date: Optional[str]
+    email: Optional[str]
+    password: Optional[str]
+    group: Optional[str]
+    compromised_date: Optional[str]
+    include_outdated_credential: bool
+    pattern: str
+
 
 class DatabaseOperation:
 
@@ -34,6 +44,7 @@ class DatabaseOperation:
 
     def query_executor(
         self,
+        url: Optional[str],
         date: Optional[str],
         email: Optional[str],
         password: Optional[str],
@@ -43,12 +54,12 @@ class DatabaseOperation:
         pattern: str,
     ):
         query_string, params = self.database_query_builder.query_builder(
+                                    url=url,
                                     date=date,
                                     email=email,
                                     password=password,
                                     group=group,
                                     compromised_date=compromised_date,
-                                    include_outdated_credential=include_outdated_credential,
                                     arguments=[pattern]
                                 )
 
@@ -58,6 +69,20 @@ class DatabaseOperation:
                            )
 
         return query_result
+
+    def bulk_operation_execute( self, data: List[BulkOperationItem] ):
+
+        for dataItem in data:
+            query_string, params = self.database_query_builder.query_builder(
+                url=dataItem.get("url"),
+                date= dataItem.get("date"),
+                email= dataItem.get("email"),
+                password= dataItem.get("pwd"),
+                group=dataItem.get("group"),
+                compromised_date=dataItem.get("compromised_date"),
+                arguments=[]
+            )
+        return
 
 
     def sql_cmd_execute(self, cmd):

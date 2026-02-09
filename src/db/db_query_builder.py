@@ -1,3 +1,4 @@
+from xml.etree.ElementInclude import include
 from pyexpat.errors import XML_ERROR_TEXT_DECL
 import os
 import sys
@@ -25,13 +26,14 @@ class DatabaseActionInterface:
 
     def query_builder(
         self,
+        url: Optional[str],
         date: Optional[str],
-        email: Optional[str],
+        user: Optional[str],
         password: Optional[str],
         group: Optional[str],
         compromised_date: Optional[str],
-        include_outdated_credential: bool,
-        arguments: List[str]):
+        arguments: List[str],
+    ):
         pass
 
 class QueryBuilder(DatabaseActionInterface):
@@ -59,13 +61,13 @@ class QueryBuilder(DatabaseActionInterface):
 
     def query_builder(
         self,
+        url: Optional[str],
         date: Optional[str],
-        email: Optional[str],
+        user: Optional[str],
         password: Optional[str],
         group: Optional[str],
         compromised_date: Optional[str],
-        include_outdated_credential: bool,
-        arguments: List[str]
+        arguments: List[str],
     ) -> Tuple[str, List]:
 
         if arguments is None or len(arguments) == 0:
@@ -75,17 +77,16 @@ class QueryBuilder(DatabaseActionInterface):
 
         query = """
             SELECT
-                email,
-                password,
-                date,
-                valid,
-                compromised_date,
-                group
+                url, email, password, group, compromised_date,
+                registration_date, access_date
             FROM credentials
             WHERE 1=1
         """
 
         params = []
+
+        if pattern == "*":
+            return query, params
 
         self.__build_filter_section(
             field_name="group",
@@ -114,8 +115,8 @@ class QueryBuilder(DatabaseActionInterface):
         )
 
         self.__build_filter_section(
-            field_name="email",
-            field=email,
+            field_name="user",
+            field=user,
             pattern=pattern,
             params=params,
             operator="LIKE",
@@ -129,9 +130,6 @@ class QueryBuilder(DatabaseActionInterface):
             operator="LIKE"
         )
 
-        if not include_outdated_credential:
-            query += " AND valid = 1"
-
         return query, params
 
 class InsertionBuilder(DatabaseActionInterface):
@@ -140,14 +138,34 @@ class InsertionBuilder(DatabaseActionInterface):
 
     def query_builder(
         self,
+        url: Optional[str],
         date: Optional[str],
-        email: Optional[str],
+        user: Optional[str],
         password: Optional[str],
         group: Optional[str],
         compromised_date: Optional[str],
-        include_outdated_credential: bool,
-        arguments: List[str]):
-        pass
+        arguments: List[str],
+    ) -> Tuple[str, List]:
+        query_template = InsertionBuilder.query_template()
+
+        params = []
+        params.append(url)
+        params.append(user)
+        params.append(password)
+        params.append(group)
+        params.append(compromised_date)
+        params.append(date)
+
+
+        return query_template, params
+
+
+    @staticmethod
+    def query_template():
+        return  """INSERT INTO crendential (
+                url, email, password, group, compromised_date,
+                registration_date, access_date
+            ) VALUES ( ?, ?, ?, ?, ?, ?, NULL)"""        
 
 
 
