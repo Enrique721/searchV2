@@ -8,12 +8,12 @@ from src.default_config.default_config import config
 
 class DatabaseConnection:
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: Optional[str] = None) -> None:
         path_to_db = DatabaseConnection.__check_db_file_existence(path if path else None)
         self.connection_object = DatabaseConnection.__create_sqlite3_connection(path_to_db)
 
     @staticmethod
-    def __check_db_file_existence(path: Optional[str] = None) -> str:
+    def __check_db_file_existence(path: Optional[str]) -> str:
         default_db_file = os.path.join(
                  config["default_db_dir"],
                  config["default_db_file"]

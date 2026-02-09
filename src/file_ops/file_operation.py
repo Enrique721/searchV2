@@ -1,49 +1,63 @@
-import itertools
-import glob
-import sys
 import os
+import sys
+import glob
 import pathlib
-from typing import List, AnyStr, Iterator
+import itertools
+from typing import List, AnyStr, Iterator, Optional
 from src.default_config.default_config import config
 
-def create_default_dir(prepare_dir: str):
+class DirectoryOperation():
 
-    os.makedirs(prepare_dir)
+    def __init__(self):
+        return
 
-    path_exists = pathlib.Path(prepare_dir)
+    def check_directory(self, path: str) -> Optional[pathlib.Path]:
+        path_object = pathlib.Path(path)
 
-    if path_exists.exists():
-        return path_exists
+        if path_object.exists():
+            return path_object
 
-    print(f"Erro: Arquivo não encontrado: {prepare_dir}", file=sys.stderr)
-    sys.exit(1)
+        return None
+
+    def check_creation_directory(self, path: str) -> pathlib.Path:
+
+        path_status = self.check_directory(path)
+
+        if path_status is None:
+            print(f"Erro: Falha ao criar ou encontrar o diretório: {path}", file=sys.stderr)
+            sys.exit(1)
+        else:
+            return path_status
+
+    def create_directory(self, path: str) -> pathlib.Path:
+
+        if not self.check_directory(path):
+            os.makedirs(path)
+        return self.check_creation_directory(path)
 
 
+class FileOperation:
+    def __init__(self, directory_operation: DirectoryOperation):
+        self.directory_operation = directory_operation
 
-def prepare_default_dir(path_string: str):
+    def make_file_iterator(self, extensions: Optional[List[str]] = ["txt", "csv"]) -> Optional[Iterator[str]]:
 
-    path_exists = pathlib.Path(path_string)
+        if extensions is None:
+            return None
 
-    if path_exists.exists():
-        return path_exists
-    else:
-        return create_default_dir(path_string)
+        else:
+            default_log_dir = config["default_log_consume_dir"]
+            log_dir = self.directory_operation.create_directory(default_log_dir)
 
-
-def make_file_iterator(extensions: List[str] = ["txt", "csv"]) -> Iterator[str]:
-
-    default_log_dir = config["default_log_consume_dir"]
-    log_dir = prepare_default_dir(default_log_dir)
-
-    path_pattern_list = [f"{str(log_dir)}/*.{extension}" for extension in extensions]
+            path_pattern_list = [f"{str(log_dir)}/*.{extension}" for extension in extensions]
     
-    print(path_pattern_list)
-    
-    file_iterator = itertools.chain.from_iterable(
-        glob.iglob(pattern) for pattern in path_pattern_list
-    )
+            file_iterator = itertools.chain.from_iterable(
+                glob.iglob(pattern) for pattern in path_pattern_list
+            )
 
-    return file_iterator
+            return file_iterator
+
 
 if __name__ == "__main__":
-    make_file_iterator()
+
+    file_operation = FileOperation(DirectoryOperation())

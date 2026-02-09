@@ -1,59 +1,63 @@
 import argparse
 
-def argument_parse() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        prog="smarthunter",
-        usage="smarthunter [options] <pattern>",
-        description="Busca credenciais vazadas no banco de dados"
-    )
 
-    # argumento obrigatório
-    parser.add_argument(
-        "pattern",
-        help="Padrão de busca (email, senha ou regex)",
-        required=True
-    )
+class CMDArgumentParser:
+    def __init__(self):
+        self.parser = self. __argument_parse()
+        self.args = self.parser.parse_args()
 
-    # opções
-    parser.add_argument(
-        "-o", "--output",
-        help="Nome do arquivo de saída"
-    )
+    # Flag switches
+    # Guarda flags booleanas
+    def __flags(self):
+        cmd_flags = [
+            (("-o", "--output"), {
+                "help": "Nome do arquivo de saída",
+                "action": "store_true"
+            }),
+            (("-p", "--path"), {
+                "help": "Caminho customizado do banco de dados",
+                "action": "store_true"
+            }),
+            (("-d", "--date"), {
+                "help": "Filtrar por data (YYYY-MM-DD)",
+                "action": "store_true"
+            }),
+            (("-e", "--email"), {
+                "help": "Buscar por email específico",
+                "action": "store_true"
+            }),
+            (("-x", "--password"), {
+                "help": "Buscar por senha específica",
+                "action": "store_true"
+            }),
+            (("-g", "--group"), {
+                "help": "Nome do grupo de Info stealer",
+                "action": "store_true"
+            }),
+            (("-z", "--compromised-date"), {
+                "help": "Data de vazamento",
+                "action": "store_true"
+            }),
+            (("-i", "--include-invalid"), {
+                "help": "Incluir credenciais invalidadas no resultado",
+                "action": "store_true"
+            }),
+        ]
 
-    parser.add_argument(
-        "-p", "--path",
-        help="Caminho customizado do banco de dados"
-    )
+        return cmd_flags
 
-    parser.add_argument(
-        "-d", "--date",
-        help="Filtrar por data (YYYY-MM-DD)"
-    )
+    def __argument_parse(self) -> argparse.ArgumentParser:
+        parser = argparse.ArgumentParser(
+            prog="smarthunter",
+            usage="smarthunter [options] <pattern>",
+            description="Busca credenciais vazadas no banco de dados"
+        )
 
-    parser.add_argument(
-        "-e", "--email",
-        help="Buscar por email específico"
-    )
+        cmd_flags = self.__flags()
+        for flags, params in cmd_flags:
+            parser.add_argument(*flags, **params)
 
-    parser.add_argument(
-        "-x", "--password",
-        help="Buscar por senha específica"
-    )
+        return parser
 
-    parser.add_argument(
-        "-g", "--group",
-        help="Nome do grupo de Info stealer"
-    )
-
-    parser.add_argument(
-        "-z", "--compromised-date",
-        help="Data de vazamento" 
-    )
-
-    parser.add_argument(
-        "-i", "--include-invalid",
-        action="store_true",
-        help="Incluir credenciais invalidadas no resultado"
-    )
-
-    return parser
+    def get_args(self):
+        return self.args

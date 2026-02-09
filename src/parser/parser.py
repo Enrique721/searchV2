@@ -1,13 +1,34 @@
-import datetime
 import re
-from typing import Iterator
+import datetime
+from optparse import Option
+from typing import Iterator, Tuple, Optional
+from src.db.db_operation import DatabaseOperation
 
 class Parser():
 
-    generic_re_pattern = re.compile(r'(?:(https?:\/\/[^\s:]+)\s*[:\s]+)?([^\s:@]+(?:@[^\s:]+)?)\s*[:\s]+\s*([^\s]\ +)')
+    # <Algo, ?> -> Opcional
+    # <Algo, ?, i> -> Opcional e sem distinção de caixa alta ou baixa
+    # <Algo, i> -> Sem distinção de caixa alta ou baixa
 
-    def __init__(self, file_iterator) -> None:
+    # Expressão regular pre compiladas
+    re_patterns = [
+        # <URL, ?>(" " | ":")<USER | EMAIL>(" " | ":")<PASSWORD>
+        # Adicionar suporte para o delimitador , e -
+        re.compile(r'(?:(https?:\/\/[^\s:]+)\s*[:\s]+)?([^\s:@]+(?:@[^\s:]+)?)\s*[:\s]+\s*([^\s]\ +)'), 
+        #
+        # <Link: <URL>, ?, i>
+        # <User: <USER | EMAIL>, i>
+        # <Password: <PASSWORD>, i>
+        # 
+        re.compile(r'')
+    ]
+
+    def __init__(self,
+                 file_iterator: Optional[Iterator[str]],
+                 database_operation: DatabaseOperation
+             ) -> None:
         self.file_iterator: Iterator[str] = file_iterator
+        self.database_operation: DatabaseOperation = database_operation
         self.patterns_type = None
 
     def main_processing_method(self):
@@ -20,28 +41,59 @@ class Parser():
 
             chunk = []
             for line in f:
-                line_parsed = Parser.generic_re_pattern.search(line)
-                if line_parsed:
-                    url, user, password = line_parsed.groups()
-                    credential_instance =  {
-                            "url": url,
-                            "user": user,
-                            "password": password,
-                            "data_de_cadastro": datetime.datetime.now(),
-                            "valido": True
-                        }
+                credential_instance = self.__extract_line_data(line)
+                if credential_instance is dict:
                     chunk.append( credential_instance )
 
-                    if chunk_size >= chunk_size:
-                        return
+                if len(chunk) >= chunk_size:
+                    return
 
+    def __extract_line_data(self, line) -> Optional[dict]:
 
+        for re_compiled_pattern in Parser.re_patterns:
 
+            line_parsed = re_compiled_pattern.search(line)
+            if line_parsed:
+                url, user, password = line_parsed.groups()
 
+                self.__credential_formatting(
+                    url=url,
+                    user=user,
+                    password=password,
+                    register_date= datetime.datetime.now(),
+                    access_date=None,
+                    leak_date=None,
+                    group=None
+                )
 
-    def extract_line_data(self, line):
+                credential_instance =  {
+                        "url": url,
+                        "user": user,
+                        "password": password,
+                        "data_de_cadastro": datetime.datetime.now(),
+                        "valido": True
+                    }
+                return credential_instance
 
-        line_parsed = Parser.generic_re_pattern.search(line)
+        return None
 
-        if line_parsed:
-            url,  email, password = line_parsed.groups()
+    def __credential_formatting(
+        self,
+        url: str,
+        user: str,
+        password: str,
+        register_date: datetime.datetime,
+        access_date: Optional[datetime.datetime],
+        leak_date: Optional[datetime.datetime],
+        group: Optional[str]
+    ) -> dict:
+
+        return {
+                    "url": url,
+                    "user": user,
+                    "password": password,
+                    "register_date": datetime.datetime.now(),
+                    "group": group,
+                    "access_date": None,
+                    "leak_date": None,
+                }

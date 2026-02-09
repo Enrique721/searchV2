@@ -1,3 +1,4 @@
+from pyexpat.errors import XML_ERROR_TEXT_DECL
 import os
 import sys
 import sqlite3
@@ -5,7 +6,35 @@ from pathlib import Path
 from typing import Optional, Tuple, List
 from src.default_config.default_config import config
 
-class QueryBuilder:
+
+# Significado do arguments
+# 
+# Query
+#  -> Padrão a ser procurado
+#
+# Insertion
+#  -> Lista de tags
+#
+# Update
+#  -> A ser definido
+#
+# Delete
+#  -> A ser definido
+
+class DatabaseActionInterface:
+
+    def query_builder(
+        self,
+        date: Optional[str],
+        email: Optional[str],
+        password: Optional[str],
+        group: Optional[str],
+        compromised_date: Optional[str],
+        include_outdated_credential: bool,
+        arguments: List[str]):
+        pass
+
+class QueryBuilder(DatabaseActionInterface):
 
     def __init__(self):
         return
@@ -36,8 +65,13 @@ class QueryBuilder:
         group: Optional[str],
         compromised_date: Optional[str],
         include_outdated_credential: bool,
-        pattern: str
+        arguments: List[str]
     ) -> Tuple[str, List]:
+
+        if arguments is None or len(arguments) == 0:
+            raise TypeError("Argumento inválido fornecido em busca")
+
+        pattern = arguments[0]
 
         query = """
             SELECT
@@ -99,3 +133,31 @@ class QueryBuilder:
             query += " AND valid = 1"
 
         return query, params
+
+class InsertionBuilder(DatabaseActionInterface):
+    def __init__(self):
+        return
+
+    def query_builder(
+        self,
+        date: Optional[str],
+        email: Optional[str],
+        password: Optional[str],
+        group: Optional[str],
+        compromised_date: Optional[str],
+        include_outdated_credential: bool,
+        arguments: List[str]):
+        pass
+
+
+
+class UpdateBuilder:
+    def __init__(self):
+        return
+
+# Funcionalidade de delete não é prioridade
+# Se for necessário avisar
+class DeleteBuilder:
+    def __init__(self):
+        return
+
