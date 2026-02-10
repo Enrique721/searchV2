@@ -1,4 +1,3 @@
-import statistics
 from src.file_ops.file_operation import DirectoryOperation
 from src.db.db_query_builder import QueryBuilder
 import os
@@ -29,7 +28,7 @@ class DatabaseConnection:
     @staticmethod
     def __create_sqlite3_connection(path: str) -> sqlite3.Connection:
         if Path(path).exists():
-            print("Bando de dados detectado, utilizando o bano de dados existente...")
+            print("Banco de dados detectado, utilizando o banco de dados existente...")
             return sqlite3.connect(path)
         else:
             print("Banco de dados não detectado, criando um novo e configurando...")
@@ -54,15 +53,15 @@ class DatabaseConnection:
             CREATE TABLE IF NOT EXISTS credential (
                 cred_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 url TEXT,
-                email TEXT,
+                username TEXT,
                 password TEXT,
                 registration_date TEXT,
                 access_date TEXT,
                 compromised_date TEXT,
 
                 group_id INTEGER,
-                FOREIGN KEY (group_id) REFERENCES credential_group(group_id),
-                UNIQUE (email, password, url)
+                FOREIGN KEY (group_id) REFERENCES group_name(group_id),
+                UNIQUE (username, password, url)
             )
         """)
 
@@ -82,19 +81,21 @@ class DatabaseConnection:
         cursor.execute("""
                        CREATE TABLE IF NOT EXISTS group_name(
                            group_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                           name TEXT NOT NULL
+                           name TEXT NOT NULL,
+                           UNIQUE(name)
                        )
                        """)
 
         cursor.execute("""
                        CREATE TABLE IF NOT EXISTS tag(
                            tag_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                           name TEXT NOT NULL
+                           name TEXT NOT NULL,
+                           UNIQUE(name)
                        )
                        """)
 
-        cursor.execute("""CREATE INDEX IF NOT EXISTS idx_credential_email
-                               ON credential(email)""")
+        cursor.execute("""CREATE INDEX IF NOT EXISTS idx_credential_username
+                               ON credential(username)""")
 
         cursor.execute("""CREATE INDEX IF NOT EXISTS idx_credential_group
                                ON credential(group_id)""")

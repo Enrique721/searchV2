@@ -6,6 +6,7 @@ import sys
 import os
 from typing import List, Optional, Tuple, Iterable
 
+
 def make_directory(report_name: str, path_dir: Optional[str]= None) -> str:
     directory = os.path.join(
                  os.getcwd() if not path_dir or len(path_dir) == 0 else path_dir,
@@ -33,27 +34,38 @@ def export_data(
     if export_type == "row":
         _export_row(directory=directory, report_name=report_name + ".txt", rows=query_result)
 
+# ('https://enrollapp.com', 'rania.nsairat@gmail.com', '0799352708rayan', None, None, '2026-02-10T15:05:51.268511', None)
 def _export_row(
     directory: str,
     report_name: str,
-    rows: Iterable[sqlite3.Row],
+    rows: List[Tuple],
 ):
     output_path = Path(directory) / report_name
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("SmartHunter Report\n")
-        f.write("=" * 18 + "\n")
+        f.write("=" * 60 + "\n")
         f.write(f"Generated at : {datetime.now():%Y-%m-%d %H:%M:%S}\n\n")
+        f.write("=" * 60 + "\n")
 
         count = 0
-        for row in rows:
-            status = "INVALID" if not row["valid"] else "VALID"
 
+        if len(rows) == 0:
             f.write("-" * 60 + "\n")
-            for key, value in row.items():
-                f.write(f"{key.capitalize():<12}: {value}\n")
-            f.write(f"Status      : {status}\n")
-
+            f.write("Nada foi encontrado")
+            f.write("XP")
+            f.write("-" * 60 + "\n")
+            return
+#
+#
+# url, username, password, group_id, compromised_date, registration_date, access_date
+# 
+        for row  in rows:
+            f.write("-" * 60 + "\n")
+            f.write(f"url: {row[0]}\n")
+            f.write(f"username: {row[1]}\n")
+            f.write(f"password: {row[2]}\n")
+            f.write(f"registration_date: {row[5]}\n")
             count += 1
 
         f.write("\n")

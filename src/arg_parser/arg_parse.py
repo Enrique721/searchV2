@@ -5,6 +5,7 @@ class CMDArgumentParser:
     def __init__(self):
         self.parser = self. __argument_parse()
         self.args = self.parser.parse_args()
+        print(self.args)
 
     # Flag switches
     # Guarda flags booleanas
@@ -14,33 +15,20 @@ class CMDArgumentParser:
                 "help": "Nome do arquivo de saída",
                 "action": "store_true"
             }),
-            (("-p", "--path"), {
-                "help": "Caminho customizado do banco de dados",
-                "action": "store_true"
-            }),
-            (("-d", "--date"), {
-                "help": "Filtrar por data (YYYY-MM-DD)",
-                "action": "store_true"
-            }),
-            (("-e", "--email"), {
+            (("-s", "--url"), {
                 "help": "Buscar por email específico",
                 "action": "store_true"
             }),
-            (("-x", "--password"), {
+            (("-u", "--username"), {
+                "help": "Buscar por email específico",
+                "action": "store_true"
+            }),
+            (("-p", "--password"), {
                 "help": "Buscar por senha específica",
                 "action": "store_true"
             }),
-            (("-g", "--group"), {
+            (("-t", "--tags"), {
                 "help": "Nome do grupo de Info stealer",
-                "action": "store_true"
-            }),
-            (("-z", "--compromised-date"), {
-                "help": "Data de vazamento",
-                "action": "store_true"
-            }),
-            (("-i", "--include-invalid"), {
-                "help": "Incluir credenciais invalidadas no resultado",
-                "action": "store_true"
             }),
         ]
 
@@ -56,6 +44,11 @@ class CMDArgumentParser:
         cmd_flags = self.__flags()
         for flags, params in cmd_flags:
             parser.add_argument(*flags, **params)
+
+        parser.add_argument(
+            "pattern",
+            help="Padrão de busca (email, domínio, hash, etc)"
+        )
 
         return parser
 

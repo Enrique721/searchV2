@@ -1,7 +1,8 @@
-from src.arg_parser.arg_parse import CMDArgumentParser
+from src.file_ops.file_operation import DirectoryOperation
 from src.db.db_query_builder import QueryBuilder
 from src.db.db_operation import DatabaseOperation
 from src.db.db_connection import DatabaseConnection
+from src.arg_parser.arg_parse import CMDArgumentParser
 from src.export.formatter import make_directory, export_data
 
 from typing import Optional, List
@@ -13,27 +14,27 @@ def main():
     parser_object = CMDArgumentParser()
     args = parser_object.get_args()
 
-    diretorio = make_directory(report_name=args.output if args.output else args.pattern)
+    directory_operation = DirectoryOperation()
+    directory = directory_operation.create_directory(args.pattern)
 
-    db_connection = DatabaseConnection(args.path)
+    db_connection = DatabaseConnection()
 
     db_executor = DatabaseOperation(
                         db_connection,
                         query_builder=QueryBuilder()
                     )
 
-    query_result = db_executor.query_executor(
-                        date=args.date,
-                        email=args.email,
-                        password=args.password,
-                        group=args.group,
-                        compromised_date=args.compromised_date,
-                        include_outdated_credential=args.invalid_credential,
-                        pattern=args.pattern
+    print(args)
+    query_result = db_executor.query_executor_search(
+        url=args.url,
+        username=args.username,
+        password=args.password,
+        pattern=args.pattern,
+        tags=args.tags
     )
 
     export_data(
-        directory=diretorio,
+        directory=str(directory),
         report_name=args.output if args.output else args.pattern,
         query_result=query_result
     )
