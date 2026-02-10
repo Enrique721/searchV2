@@ -15,7 +15,7 @@ def main():
     args = parser_object.get_args()
 
     directory_operation = DirectoryOperation()
-    directory = directory_operation.create_directory(args.pattern)
+    directory = directory_operation.create_directory(args.output if args.output else args.pattern)
 
     db_connection = DatabaseConnection()
 

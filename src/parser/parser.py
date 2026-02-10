@@ -116,6 +116,7 @@ class Parser:
         
         if line_parsed and len(line_parsed.groups()) > 0:
             url, user, password = line_parsed.groups()
+            url = url if url else ''
 
             credential_instance = self.__credential_formatting(
                 url=url, user=user, password=password,

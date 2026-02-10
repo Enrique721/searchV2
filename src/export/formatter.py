@@ -7,6 +7,8 @@ import sys
 import os
 from typing import List, Optional, Tuple, Iterable
 
+WIDTH = 131
+
 def make_directory(report_name: str, path_dir: Optional[str]= None) -> str:
     directory = os.path.join(
                  os.getcwd() if not path_dir or len(path_dir) == 0 else path_dir,
@@ -49,27 +51,27 @@ def _export_row(
     password_path = Path(directory) / "password.txt"
 
     with open(output_path, "w", encoding="utf-8") as f:
-        f.write("=" * 131 + "\n")
+        f.write("=" * WIDTH + "\n")
         f.write(f"{banner}\n")
-        f.write("=" * 131 + "\n")
+        f.write("=" * WIDTH + "\n")
         f.write("Relatório de busca SmartHunter\n")
-        f.write("=" * 131 + "\n")
+        f.write("=" * WIDTH + "\n")
         f.write(f"Gerado as : {datetime.now():%Y-%m-%d %H:%M:%S}\n\n")
         f.write(f"Registros encontrados: {len(rows)}\n")
         f.write(f"Termo de pesquisa: {pattern}\n")
-        f.write("=" * 131 + "\n")
+        f.write("=" * WIDTH + "\n")
 
 
         if len(rows) == 0:
-            f.write("-" * 60 + "\n")
-            f.write("Nada foi encontrado :|\n")
-            f.write("-" * 60 + "\n")
+            f.write("-" * WIDTH + "\n")
+            f.write("Nada foi encontrado :)\n")
+            f.write("-" * WIDTH + "\n")
             return
 
         with open(user_name_path, "w", encoding="utf-8") as u:
             with open(password_path, "w", encoding="utf-8") as p:
                 for row  in rows:
-                    f.write("-" * 60 + "\n")
+                    f.write("-" * WIDTH + "\n")
                     f.write(f"url: {row[0]}\n")
                     f.write(f"username: {row[1]}\n")
                     f.write(f"password: {row[2]}\n")
@@ -77,6 +79,7 @@ def _export_row(
 
                     u.write(f"{row[1]}\n")
                     p.write(f"{row[2]}\n")
+        f.write("=" * WIDTH + "\n")
 
         
 # def _export_csv():

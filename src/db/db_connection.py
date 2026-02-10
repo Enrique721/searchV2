@@ -62,6 +62,7 @@ class DatabaseConnection:
                 group_id INTEGER,
                 FOREIGN KEY (group_id) REFERENCES group_name(group_id),
                 UNIQUE (username, password, url)
+                
             )
         """)
 
