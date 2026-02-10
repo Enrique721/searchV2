@@ -6,6 +6,8 @@ import itertools
 from typing import List, AnyStr, Iterator, Optional
 from src.default_config.default_config import config
 
+MAX_RETRIES = 100
+
 class DirectoryOperation():
 
     def __init__(self):
@@ -57,7 +59,56 @@ class FileOperation:
 
             return file_iterator
 
+    def __move_file(self, from_path: str, to_path: str):
 
-if __name__ == "__main__":
+        path = self.directory_operation.create_directory(to_path)
 
-    file_operation = FileOperation(DirectoryOperation())
+        if path is None:
+            raise OSError("Failed to create directory or path not found")
+        
+        try:
+            os.rename(
+                  src=from_path,
+                  dst=f"{os.path.join(to_path, os.path.basename(from_path))}")
+            return True
+
+        except OSError:
+            print("Trying to create a file with suffix")
+            base = os.path.basename(from_path)
+            name, ext = os.path.splitext(base)
+            for i in range(1, MAX_RETRIES + 1):
+                new_name = f"{name}_{i}{ext}"
+                new_dst = os.path.join(to_path, new_name)
+
+                try:
+                    os.rename(from_path, new_dst)
+                    return True
+
+                except OSError:
+                    print("Failed to created with suffix")
+                    pass
+        return False
+
+    def move_processed_file(self, target_file: str) -> bool:
+        status = self.__move_file(
+                     from_path=target_file,
+                     to_path=config["default_log_not_processed_dir"]
+                 )
+        if status:
+            print(f"Moved successfully {target_file}")
+        else:
+            print(f"Failed to move {target_file}")
+        
+        return status
+
+    def move_unprocessed_file(self, target_file: str) -> bool:
+        status = self.__move_file(
+                     from_path=target_file,
+                     to_path=config["default_log_processed_dir"]
+                 )
+        if status:
+            print(f"Moved successfully {target_file}")
+        else:
+            print(f"Failed to move {target_file}")
+
+        return status

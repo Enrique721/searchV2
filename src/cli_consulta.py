@@ -24,19 +24,19 @@ def main():
                         query_builder=QueryBuilder()
                     )
 
-    print(args)
     query_result = db_executor.query_executor_search(
         url=args.url,
         username=args.username,
         password=args.password,
         pattern=args.pattern,
-        tags=args.tags
+        tags=args.tag
     )
 
     export_data(
         directory=str(directory),
         report_name=args.output if args.output else args.pattern,
-        query_result=query_result
+        query_result=query_result,
+        pattern=args.pattern
     )
 
     db_connection.closeConnection()

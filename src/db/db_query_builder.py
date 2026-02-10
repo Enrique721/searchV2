@@ -65,7 +65,6 @@ class QueryBuilder:
         if pattern == "*" or (url == False and password == False and username == False):
             return query, params
 
-        print(url, password, username)
         if url:
             query += f" AND url LIKE ?"
             params.append(f"%{pattern}%")
@@ -75,8 +74,6 @@ class QueryBuilder:
         if username:
             query += f" AND username LIKE ?"
             params.append(f"%{pattern}%")
-
-        print(query)
         return query, params
 
 class InsertionBuilder:

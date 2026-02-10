@@ -11,6 +11,7 @@ class DatabaseConnection:
 
     def __init__(self,
                  path: Optional[str] = None) -> None:
+
         path_to_db = self.__check_db_file_existence(path if path else None)
         self.connection_object = DatabaseConnection.__create_sqlite3_connection(path_to_db)
 
@@ -20,7 +21,6 @@ class DatabaseConnection:
 
         directory_operation = DirectoryOperation()
         directory_operation.create_directory(config["default_db_dir"])
-
 
         return str(path_file_exists)
 
