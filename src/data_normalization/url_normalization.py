@@ -3,10 +3,9 @@ from urllib.parse import urlparse
 
 class UrlNormalization(AccessCredentialNormalizationInterface):
 
-
     @staticmethod
-    def normalization(login: str) -> str:
-        url = login.strip()
+    def normalization(raw: str) -> str:
+        url = raw.strip()
 
         if "://" not in url:
             parsed = urlparse("http://" + url)

@@ -47,8 +47,21 @@ class DatabaseConnection:
     def __configure_database(connection: sqlite3.Connection): 
         cursor = connection.cursor()
 
+        DatabaseConnection.__pragma_config(cursor)
+        DatabaseConnection.__create_base_tables(cursor)
+        DatabaseConnection.__index_b_creation(cursor)
+        DatabaseConnection.__create_text_index(cursor)
+        DatabaseConnection.__create_trigger(cursor)
+
+
+
+
+    @staticmethod
+    def __pragma_config(cursor):
         cursor.execute("PRAGMA foreign_keys = ON")
 
+    @staticmethod
+    def __create_base_tables(cursor):
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS credential (
                 cred_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,14 +108,16 @@ class DatabaseConnection:
                        )
                        """)
 
-        cursor.execute("""CREATE INDEX IF NOT EXISTS idx_credential_username
-                               ON credential(username)""")
+    @staticmethod
+    def __index_b_creation(cursor):
+        pass
 
-        cursor.execute("""CREATE INDEX IF NOT EXISTS idx_credential_group
-                               ON credential(group_id)""")
 
-        cursor.execute("""CREATE INDEX IF NOT EXISTS idx_tagged_cred_id
-                               ON tagged_credential(cred_id)""")
+    # Revisar
+    @staticmethod
+    def __create_text_index(cursor):
+        return
 
-        cursor.execute("""CREATE INDEX IF NOT EXISTS idx_tagged_tag_id
-                               ON tagged_credential(tag_id)""")
+    @staticmethod
+    def __create_trigger(cursor):
+        return

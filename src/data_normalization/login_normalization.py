@@ -1,5 +1,7 @@
 import re
-from typing import Literal, TypedDict
+from typing import Literal, TypedDict, Tuple
+from src.data_normalization.phone_normalization import PhoneNormalization
+from src.data_normalization.email_normalization import EmailNormalization
 
 crendential_type = Literal['email', 'document', 'id_number', 'phone', 'nickname', 'unknown']
 
@@ -17,10 +19,10 @@ def access_method_candidate_factory(
     }
 
 
+# Interface for other normalizers
 class AccessCredentialNormalizationInterface:
-
     @staticmethod
-    def normalization(login: str):
+    def normalization(raw: str):
         pass
 
 
@@ -32,7 +34,7 @@ class LoginTypeIdentificationAndNormalization:
                 r'^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$',
                 re.IGNORECASE
             ),
-                "email"
+            "email"
         ),
         access_method_candidate_factory(
             re.compile(
@@ -40,31 +42,10 @@ class LoginTypeIdentificationAndNormalization:
             ),
             "phone"
         ),
-        access_method_candidate_factory(
-            re.compile(
-                r'^[A-Z0-9][A-Z0-9.\-\/]{4,29}$',
-                re.IGNORECASE
-            ),
-            "document"
-        ),
-        access_method_candidate_factory(
-            re.compile(
-                r'^\d{4,20}$'
-            ),
-            "id_number"
-        ),
-        access_method_candidate_factory(
-            re.compile(
-                r'^[A-Z][A-Z0-9._-]{2,29}$',
-                re.IGNORECASE
-            ),
-            "nickname"
-        )
     ]
     
     @staticmethod
     def __access_credential_detect(login: str) ->  crendential_type:
-
         for access_login in LoginTypeIdentificationAndNormalization.access_login_candidates:
             if m:= access_login["pattern"].match(login):
                 return access_login["type"]
@@ -72,25 +53,27 @@ class LoginTypeIdentificationAndNormalization:
         return 'unknown'
 
     @staticmethod
-    def credential_normalization(login: str):
+    def credential_normalization(login: str) -> Tuple[str, crendential_type]:
 
-        credential_type = LoginTypeIdentificationAndNormalization.credential_normalization(login)
+        credential_type = LoginTypeIdentificationAndNormalization\
+                                    .credential_normalization(login)
 
         match credential_type:
             case 'email':
-                pass
+                normalized, status = EmailNormalization.normalization(login)
 
-            case 'document':
-                pass
-
-            case 'id_number':
-                pass
+                if status:
+                    return normalized, credential_type
+                else:
+                    return login, 'unknown'
 
             case 'phone':
-                pass
+                normalized, status = PhoneNormalization.normalization(login)
+                if status:
+                    return normalized, credential_type
+                else:
+                    return login, 'unknown'
 
             case _:
-                pass
-        
-        return
+                return login, 'unknown'
 
