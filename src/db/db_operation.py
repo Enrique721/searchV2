@@ -160,6 +160,8 @@ class DatabaseOperation:
 
         conn = self.database_connection_object.getConnectionObject()
         
+        conn.execute("BEGIN")
+
         cursor = conn.cursor()
 
         res = cursor.executemany(query_string, params)
@@ -167,5 +169,4 @@ class DatabaseOperation:
         conn.commit()
 
         print(cursor.rowcount)
-        print(cursor.row_factory)
         return res

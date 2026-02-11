@@ -36,11 +36,12 @@ class Parser:
         # Adicionar suporte para o delimitador , e - <- Fase de refinamento
 
         re.compile(
-            r'^(?:(https?:\/\/[^\s:/]+)\s*[:\s]+)?'
-            r'([^\s\x00-\x1F\x7F█╔╗╝╚═]+)'
+            r'^(?:([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s]+)\s*[:\s]+)?'
+            r'((?:\+?\d{1,3})?\d{8,15}|[a-zA-Z0-9._-]+(?:@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})?)'
             r'\s*[:\s]+\s*'
             r'([^\s\x00-\x1F\x7F█╔╗╝╚═]+)$'
         ),
+
 
         # <Link: <URL>, ?, i>
         # <User: <USER | EMAIL>, i>
@@ -75,7 +76,7 @@ class Parser:
         with open(file, 'r') as f:
 
             for line in f:
-                credential_instance = self.__extract_data(line=line.strip())
+                credential_instance = self.__extract_data(line=line.strip(' /\t'))
                 if credential_instance is not None:
                     self.chunk.append( credential_instance )
 
