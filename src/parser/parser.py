@@ -1,3 +1,4 @@
+from src.data_normalization.url_normalization import UrlNormalization
 from src.db.db_operation import DatabaseOperation
 import re
 import datetime
@@ -32,9 +33,8 @@ class Parser:
     # Expressão regular pre compiladas
     re_patterns = [
 
-        # <URL, ?>(" " | ":")<USER | EMAIL>(" " | ":")<PASSWORD>
+        # <protocolo + URL, ?>(" " | ":")<USER | EMAIL>(" " | ":")<PASSWORD>
         # Adicionar suporte para o delimitador , e - <- Fase de refinamento
-
         re.compile(
             r'^(?:([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s]+)\s*[:\s]+)?'
             r'((?:\+?\d{1,3})?\d{8,15}|[a-zA-Z0-9._-]+(?:@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})?)'
@@ -117,7 +117,7 @@ class Parser:
         
         if line_parsed and len(line_parsed.groups()) > 0:
             url, user, password = line_parsed.groups()
-            url = url if url else ''
+            url = UrlNormalization.normalization(url) if url else ''
 
             credential_instance = self.__credential_formatting(
                 url=url, user=user, password=password,
