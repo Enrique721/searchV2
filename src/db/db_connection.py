@@ -1,16 +1,16 @@
-from src.file_ops.file_operation import DirectoryOperation
-from src.db.db_query_builder import QueryBuilder
 import os
 import sys
 import sqlite3
 from pathlib import Path
 from typing import Optional, Tuple, List
+
+from src.db.db_query_builder import QueryBuilder
+from src.file_ops.file_operation import DirectoryOperation
 from src.default_config.default_config import config
 
 class DatabaseConnection:
 
-    def __init__(self,
-                 path: Optional[str] = None) -> None:
+    def __init__(self, path: Optional[str] = None) -> None:
 
         path_to_db = self.__check_db_file_existence(path if path else None)
         self.connection_object = DatabaseConnection.__create_sqlite3_connection(path_to_db)
@@ -47,21 +47,25 @@ class DatabaseConnection:
     def __configure_database(connection: sqlite3.Connection): 
         cursor = connection.cursor()
 
+        """
+            PRAGMA -> Configuração geral do db
+            base_table -> Criação de todas as tabelas
+            create_text_index -> Criação de índice de texto
+            create_trigger -> Trigger de dados
+            rebuild_indexes -> Inicialização dos índice
+        """
+
         DatabaseConnection.__pragma_config(cursor)
         DatabaseConnection.__create_base_tables(cursor)
-        DatabaseConnection.__index_b_creation(cursor)
         DatabaseConnection.__create_text_index(cursor)
         DatabaseConnection.__create_trigger(cursor)
 
-
-
-
     @staticmethod
-    def __pragma_config(cursor):
+    def __pragma_config(cursor: sqlite3.Cursor):
         cursor.execute("PRAGMA foreign_keys = ON")
 
     @staticmethod
-    def __create_base_tables(cursor):
+    def __create_base_tables(cursor: sqlite3.Cursor):
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS credential (
                 cred_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -108,16 +112,41 @@ class DatabaseConnection:
                        )
                        """)
 
-    @staticmethod
-    def __index_b_creation(cursor):
-        pass
-
-
     # Revisar
     @staticmethod
-    def __create_text_index(cursor):
-        return
+    def __create_text_index(cursor: sqlite3.Cursor):
+
+        cursor.execute("""
+                        CREATE VIRTUAL TABLE credential_text_index USING fts5(
+                            url,
+                            username,
+                            tokenize = 'trigram',
+                            content='credential',
+                            content_rowid='cred_id'
+                        )
+                       """);
 
     @staticmethod
-    def __create_trigger(cursor):
-        return
+    def __create_trigger(cursor: sqlite3.Cursor):
+        cursor.execute("""
+                CREATE TRIGGER credential_text_indexer AFTER INSERT ON credential BEGIN
+                    INSERT INTO credential_text_index(rowid, url, username)
+                    VALUES (new.cred_id, new.url, new.username);
+                END;
+                       """);
+
+        cursor.execute("""
+                CREATE TRIGGER credential_indexer_delete AFTER DELETE ON credential BEGIN
+                    INSERT INTO credential_text_index(credential_text_index, rowid, url, username)
+                    VALUES('delete', old.cred_id, old.url, old.username);
+                END;
+                       """);
+
+        cursor.execute("""
+                CREATE TRIGGER credential_indexer_update AFTER UPDATE ON credential BEGIN
+                    INSERT INTO credential_text_index(credential_text_index, rowid, url, username)
+                        VALUES('delete', old.cred_id, old.url, old.username);
+                    INSERT INTO credential_text_index(rowid, url, username)
+                        VALUES (new.cred_id, new.url, new.username);
+                END;
+                       """);

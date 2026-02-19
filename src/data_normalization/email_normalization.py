@@ -1,3 +1,4 @@
+from src.data_normalization.provider_list import PROVIDER_BASE_LIST
 from typing import Match
 import re
 from src.data_normalization.login_normalization import AccessCredentialNormalizationInterface
@@ -9,15 +10,7 @@ class EmailNormalization(AccessCredentialNormalizationInterface):
                  r'\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\b'
              )
 
-    PROVIDER_BASE: dict = {
-        "gmail": "gmail.com",
-        "outlook": "outlook.com",
-        "hotmail": "hotmail.com",
-        "yahoo": "yahoo.com",
-        "icloud": "icloud.com",
-        "proton": "proton.me",
-    }
-
+    PROVIDER_BASE: dict = PROVIDER_BASE_LIST
 
     @staticmethod
     def normalization(raw: str):

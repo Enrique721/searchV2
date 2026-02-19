@@ -5,8 +5,8 @@ from typing import Optional
 
 from src.db.db_operation import DatabaseOperation
 from src.db.db_connection import DatabaseConnection
-from src.parser.parser import Parser
 from src.db.db_query_builder import InsertionBuilder
+from src.parser.parser import Parser
 from src.export.formatter import make_directory
 from src.default_config.default_config import config
 from src.file_ops.file_operation import FileOperation, DirectoryOperation

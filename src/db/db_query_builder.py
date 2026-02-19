@@ -52,29 +52,28 @@ class QueryBuilder:
         tags: Optional[List[str]],
     ) -> Tuple[str, List]:
 
-        query = """
-            SELECT
-                url, username, password, group_id, compromised_date,
-                registration_date, access_date
-            FROM credential
-            WHERE 1=1
+        query = """"
+            SELECT c.*
+                FROM credential c
+                JOIN credential_text_index f
+                    ON c.cred_id = f.rowid
+                WHERE credential_text_index MATCH ?;
         """
 
         params = []
 
-        if pattern == "*" or (url == False and password == False and username == False):
-            return query, params
+        # Ambos falsos ou verdadeiros
+        if url == username:
+            params.append(pattern)
 
-        if url:
-            query += f" AND url LIKE ?"
-            params.append(f"%{pattern}%")
-        if password:
-            query += f" AND password LIKE ?"
-            params.append(f"%{pattern}%")
-        if username:
-            query += f" AND username LIKE ?"
-            params.append(f"%{pattern}%")
+        elif url:
+            params.append(f"url:{pattern}")
+
+        elif username:
+            params.append(f"username:{pattern}")
+
         return query, params
+
 
 class InsertionBuilder:
     def __init__(self):

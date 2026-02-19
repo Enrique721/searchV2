@@ -1,7 +1,5 @@
 import re
 from typing import Literal, TypedDict, Tuple
-from src.data_normalization.phone_normalization import PhoneNormalization
-from src.data_normalization.email_normalization import EmailNormalization
 
 crendential_type = Literal['email', 'document', 'id_number', 'phone', 'nickname', 'unknown']
 
@@ -54,6 +52,8 @@ class LoginTypeIdentificationAndNormalization:
 
     @staticmethod
     def credential_normalization(login: str) -> Tuple[str, crendential_type]:
+        from src.data_normalization.phone_normalization import PhoneNormalization
+        from src.data_normalization.email_normalization import EmailNormalization
 
         credential_type = LoginTypeIdentificationAndNormalization\
                                     .credential_normalization(login)

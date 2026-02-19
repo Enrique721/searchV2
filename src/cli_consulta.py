@@ -29,7 +29,8 @@ def main():
     query_result = db_executor.query_executor_search(
         url=args.url,
         username=args.username,
-        password=args.password,
+        # password=args.password,
+        password=False, # Não esta sendo usado
         pattern=args.pattern,
         tags=args.tag
     )
@@ -42,7 +43,6 @@ def main():
     )
 
     db_connection.closeConnection()
-
     
 if __name__ == "__main__":
     main()
