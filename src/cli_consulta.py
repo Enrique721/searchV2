@@ -29,8 +29,9 @@ def main():
     query_result = db_executor.query_executor_search(
         url=args.url,
         username=args.username,
-        # password=args.password,
-        password=False, # Não esta sendo usado
+        # Não esta sendo usado,
+        # se precisar avisar
+        # password=args.password, 
         pattern=args.pattern,
         tags=args.tag
     )

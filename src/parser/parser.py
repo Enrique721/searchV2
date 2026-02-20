@@ -1,11 +1,16 @@
+from socket import INADDR_MAX_LOCAL_GROUP
+from src.parser.block_data_parser import ParseBlockData
 from src.data_normalization.url_normalization import UrlNormalization
 from src.db.db_operation import DatabaseOperation
+
 import re
 import datetime
 from optparse import Option
 from typing import Iterator, Tuple, Optional, List
 
 from enum import Enum
+
+MAX_CHUNK_SIZE = 800000
 
 class ParserType(Enum):
     LINE_PARSING = 0
@@ -41,8 +46,7 @@ class Parser:
             r'\s*[:\s]+\s*'
             r'([^\s\x00-\x1F\x7F█╔╗╝╚═]+)$'
         ),
-
-
+        
         # <Link: <URL>, ?, i>
         # <User: <USER | EMAIL>, i>
         # <Password: <PASSWORD>, i>
@@ -54,45 +58,47 @@ class Parser:
 
     ]
 
-    ## Check the proportion of ascii chars
-    def sane(s: str) -> bool:
-        return sum(c.isascii() for c in s) / len(s) > 0.9
-
     def __init__(self,
                  file_iterator: Optional[Iterator[str]],
                  database_operation: DatabaseOperation
              ) -> None:
         self.file_iterator: Iterator[str] = file_iterator
         self.database_operation: DatabaseOperation = database_operation
-        self.block_instance: dict[str, Optional[str]] = {}
+        self.block_instance: dict[str, Optional[str]] = ParseBlockData.generate_new_block()
+
+        self.today_time = datetime.datetime.now().isoformat()
+
+        # Chunk para inserir dados em massa limitado 80
         self.chunk = []
 
     def main_processing_method(self):
         for file in self.file_iterator:
             self.__process_file(file)
 
-    def __process_file(self, file: str, chunk_size: int = 800000):
+    def __process_file(self, file: str, chunk_size: int = MAX_CHUNK_SIZE):
 
         with open(file, 'r') as f:
-
-            for line in f:
-                credential_instance = self.__extract_data(line=line.strip(' /\t'))
-                if credential_instance is not None:
-                    self.chunk.append( credential_instance )
-
-                if len(self.chunk) >= chunk_size:
-                    self.database_operation.\
-                        bulk_operation_insert_execute(data=self.chunk)
-                    self.chunk = []
+            self.read_process_file(file=f, chunk_size=chunk_size)
 
             if len(self.block_instance.keys()) != 0:
                 self.__add_block_data_to_chunk()
             
-            if (len(self.chunk) != 0):
+            if len(self.chunk) != 0:
                 self.database_operation.\
                     bulk_operation_insert_execute(data=self.chunk)
 
         self.chunk = []
+
+    def read_process_file(self, file, chunk_size):
+        for line in file:
+            credential_instance = self.__extract_data(line=line.strip(' /\t\n'))
+            if credential_instance is not None:
+                self.chunk.append( credential_instance )
+
+            if len(self.chunk) >= chunk_size:
+                self.database_operation.\
+                    bulk_operation_insert_execute(data=self.chunk)
+                self.chunk = []
 
     # Modo de parsing
     # Com força bruta
@@ -117,11 +123,14 @@ class Parser:
         
         if line_parsed and len(line_parsed.groups()) > 0:
             url, user, password = line_parsed.groups()
-            url = UrlNormalization.normalization(url) if url else ''
+            url_parsed, status = UrlNormalization.normalization(url) if url else ('', False)
 
             credential_instance = self.__credential_formatting(
-                url=url, user=user, password=password,
-                leak_date=None, group=None
+                url=url_parsed,
+                user=user,
+                password=password,
+                leak_date=None,
+                group=None
             )
 
             return credential_instance
@@ -162,11 +171,9 @@ class Parser:
                     "url": url,
                     "user": user,
                     "password": password,
-                    "registration_date": datetime.\
-                                            datetime.\
-                                            now().\
-                                            isoformat(),
-                    "group": group,
+                    "registration_date": self.today_time,
                     "compromised_date": leak_date,
+                    "group": group,
                     "access_date": None,
                 }
+

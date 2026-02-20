@@ -25,23 +25,15 @@ class QueryBuilder:
     def __init__(self):
         return
 
-    def __build_filter_section(
-            self,
-            field_name: str,
-            field: Optional[str],
-            pattern: str,
-            params: List,
-            operator: str,
-            fallback_operator: Optional[str] = None
-        ) -> Optional[str]:
-
-        if field or operator == "LIKE":
-            params.append(field if field else pattern)
-            return f" AND {field_name} {operator} ?"
-
-        if fallback_operator is not None:
-            return f" AND {field_name} {fallback_operator}"
-    
+    @staticmethod
+    def search_query_template():
+        return  """
+            SELECT c.*
+                FROM credential c
+                JOIN credential_text_index f
+                    ON c.cred_id = f.rowid
+                WHERE credential_text_index MATCH ?;
+        """
 
     def query_builder(
         self,
@@ -50,15 +42,7 @@ class QueryBuilder:
         username: bool,
         pattern: str,
         tags: Optional[List[str]],
-    ) -> Tuple[str, List]:
-
-        query = """"
-            SELECT c.*
-                FROM credential c
-                JOIN credential_text_index f
-                    ON c.cred_id = f.rowid
-                WHERE credential_text_index MATCH ?;
-        """
+    ) -> List:
 
         params = []
 
@@ -72,7 +56,7 @@ class QueryBuilder:
         elif username:
             params.append(f"username:{pattern}")
 
-        return query, params
+        return params
 
 
 class InsertionBuilder:
@@ -88,8 +72,7 @@ class InsertionBuilder:
         group: Optional[str] = None,
         compromised_date: Optional[str] = None,
         arguments: List[str] = [],
-    ) -> Tuple[str, List]:
-        query_template = InsertionBuilder.query_credential_name_insert_template()
+    ) -> List:
 
         params = []
         params.append(url)
@@ -99,15 +82,27 @@ class InsertionBuilder:
         params.append(compromised_date)
         params.append(date)
 
-        return query_template, params
+        return params
 
     @staticmethod
     def query_credential_name_insert_template():
         return  """
             INSERT INTO credential (
-                url, username, password, group_id,
-                compromised_date, registration_date, access_date
-            ) VALUES (?, ?, ?, ?, ?, ?, NULL)
+                url,
+                username,
+                password,
+                group_id,
+                compromised_date,
+                registration_date,
+                access_date
+            ) VALUES (
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                NULL)
             ON CONFLICT(username, password, url)
             DO NOTHING
         """

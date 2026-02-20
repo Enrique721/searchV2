@@ -6,6 +6,10 @@ class UrlNormalization(AccessCredentialNormalizationInterface):
 
     @staticmethod
     def normalization(raw: str) -> Tuple[str, bool]:
+
+        if raw is None or len(raw) == 0:
+            return '', False
+        
         url = raw.strip()
 
         try:
