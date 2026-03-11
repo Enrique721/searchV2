@@ -1,0 +1,6 @@
+build
+dist
+*.spec
+*.txt
+testes
+tests
