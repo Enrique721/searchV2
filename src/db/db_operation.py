@@ -115,19 +115,19 @@ class DatabaseOperation:
         )
 
     def __group_name_insertion(self, group_name: str):
-        group = group_name
         tag_insert_template = InsertionBuilder.query_tag_insert_template()
         group_name_insert_template = InsertionBuilder.query_group_name_insert_template()
-
         connection_object = self.database_connection_object.getConnectionObject()
         cursor = connection_object.cursor()
 
-        group_id = self.__query_execute_insert(
-                               group_name_insert_template,
-                               [group]
-                           )
+        group_id = self.__get_group_id(group_name=group_name)
+        if group_id is None:
+            group_id = self.__query_execute_insert(
+                                   group_name_insert_template,
+                                   [group_name]
+                               )
 
-        self.__query_execute_insert(tag_insert_template, [group])
+        self.__query_execute_insert(tag_insert_template, [group_name])
 
     def __execute_bulk_operation(self, query_string: str, param_list: List[List[str]]):
         conn = self.database_connection_object\
@@ -145,8 +145,10 @@ class DatabaseOperation:
         conn = self.database_connection_object.getConnectionObject()
         cursor = conn.cursor()
 
+        search_template = QueryBuilder.search_group_id_template()
+
         cursor.execute(
-            "SELECT group_id FROM group_name WHERE name = ?",
+            search_template,
             [group_name]
         )
 

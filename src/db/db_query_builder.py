@@ -25,6 +25,14 @@ class QueryBuilder:
         return
 
     @staticmethod
+    def search_group_id_template():
+        return """
+            SELECT group_id
+                FROM group_name
+                WHERE name = ?
+        """
+
+    @staticmethod
     def search_query_template():
         return  """
             SELECT c.*

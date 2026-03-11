@@ -63,6 +63,9 @@ class DatabaseConnection:
     def __pragma_config(cursor: sqlite3.Cursor):
         cursor.execute("PRAGMA foreign_keys = ON")
         cursor.execute("PRAGMA journal_mode=wal")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA temp_store=MEMORY")
+        cursor.execute("PRAGMA cache_size=-358400")
 
     @staticmethod
     def __create_base_tables(cursor: sqlite3.Cursor):
