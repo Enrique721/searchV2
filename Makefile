@@ -43,5 +43,6 @@ uninstall:
 
 clean:
 	rm -rf dist build
+	rm -f *.spec
 
 .phony: run-register run-search install
