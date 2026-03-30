@@ -11,10 +11,10 @@ SEARCH_BINARY := dist/$(SEARCH_BINARY_NAME)
 INSTALL_DIRECTORY := ~/.local/bin
 
 $(REGISTER_BINARY): $(SRC_MAIN_REGISTER)
-	../venv/bin/pyinstaller --onefile $(SRC_MAIN_REGISTER)
+	venv/bin/pyinstaller --onefile $(SRC_MAIN_REGISTER)
 
 $(SEARCH_BINARY): $(SRC_MAIN_SEARCH)
-	../venv/bin/pyinstaller --onefile $(SRC_MAIN_SEARCH)
+	venv/bin/pyinstaller --onefile $(SRC_MAIN_SEARCH)
 
 run-clean-register: clean $(REGISTER_BINARY)
 	./$(REGISTER_BINARY)
@@ -43,5 +43,6 @@ uninstall:
 
 clean:
 	rm -rf dist build
+	rm -f *.spec
 
 .phony: run-register run-search install

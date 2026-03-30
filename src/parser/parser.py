@@ -196,6 +196,8 @@ class Parser:
         if '_' not in filename:
             return filename, ""
 
-        group_name, collection_date = filename.split('_')
+        file_name_section_split = filename.split('_')
+        group_name, collection_date = (file_name_section_split[1],
+                                       file_name_section_split[2])
 
         return group_name, collection_date
