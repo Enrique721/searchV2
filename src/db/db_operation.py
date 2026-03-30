@@ -82,15 +82,12 @@ class DatabaseOperation:
         
         return query_result
 
-    def bulk_operation_insert_execute(self, data: List[BulkCredentialInsertOperationItem]):
-
+    def bulk_operation_insert_execute(self,
+                                      data: List[BulkCredentialInsertOperationItem],
+                                      group_name: str,
+                                      collection_date: str):
         param_list = []
-        group_id = None
-        group_name = data[0].get("group")
-
-        if group_name is not None:
-            self.__group_name_insertion(group_name)
-        
+        group_id = self.__obtain_group_id(group_name)
         credential_insertion_query_string = InsertionBuilder \
                                                 .query_credential_name_insert_template()
 
@@ -102,8 +99,8 @@ class DatabaseOperation:
                 date=dataItem.get("registration_date"),
                 user=dataItem.get("user"),
                 password=dataItem.get("password"),
-                group=dataItem.get("group"),
-                compromised_date=dataItem.get("compromised_date"),
+                group=group_id,
+                compromised_date=collection_date,
                 arguments=[]
             )
 
@@ -114,20 +111,18 @@ class DatabaseOperation:
             param_list
         )
 
-    def __group_name_insertion(self, group_name: str):
+    # Return group_id
+    def __obtain_group_id(self, group_name: str) -> int:
+
         tag_insert_template = InsertionBuilder.query_tag_insert_template()
         group_name_insert_template = InsertionBuilder.query_group_name_insert_template()
-        connection_object = self.database_connection_object.getConnectionObject()
-        cursor = connection_object.cursor()
 
         group_id = self.__get_group_id(group_name=group_name)
         if group_id is None:
-            group_id = self.__query_execute_insert(
-                                   group_name_insert_template,
-                                   [group_name]
-                               )
+            group_id = self.__query_execute_insert(group_name_insert_template, [group_name])
+            self.__query_execute_insert(tag_insert_template, [group_name])
 
-        self.__query_execute_insert(tag_insert_template, [group_name])
+        return group_id
 
     def __execute_bulk_operation(self, query_string: str, param_list: List[List[str]]):
         conn = self.database_connection_object\

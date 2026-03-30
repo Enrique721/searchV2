@@ -6,8 +6,7 @@ from src.db.db_operation import DatabaseOperation
 
 import re
 import datetime
-from optparse import Option
-from typing import Iterator, Tuple, Optional, List
+from typing import Iterator, Tuple, Optional
 
 from enum import Enum
 
@@ -52,7 +51,7 @@ class Parser:
         # <Password: <PASSWORD>, i>
         {
             BlockSegment.LINK: re.compile(r"(?i)^(link|url|site)\s*:\s*(.+)$"),
-            BlockSegment.USER: re.compile(r"(?i)^(user|login|email)\s*:\s*(.+)$"),
+            BlockSegment.USER: re.compile(r"(?i)^(user|login|email|username)\s*:\s*(.+)$"),
             BlockSegment.PASSWORD: re.compile(r"(?i)^(password|pass)\s*:\s*(.+)$"),
         }
 
@@ -82,11 +81,15 @@ class Parser:
             self.__process_file(file)
 
     def __process_file(self, file: str, chunk_size: int = MAX_CHUNK_SIZE):
-
-        gorup_name, collection_date = self.__get_group_name(file)
+        group_name, collection_date = self.__get_group_name(file)
 
         with open(file, 'r') as f:
-            self.read_process_file(file=f, chunk_size=chunk_size)
+            self.read_process_file(
+                file=f,
+                chunk_size=chunk_size,
+                group_name=group_name,
+                collection_date=collection_date
+            )
 
             if len(self.block_instance.keys()) != 0:
                 self.__add_block_data_to_chunk()
@@ -97,7 +100,11 @@ class Parser:
 
         self.chunk = []
 
-    def read_process_file(self, file, chunk_size):
+    def read_process_file(self,
+                          file,
+                          chunk_size,
+                          group_name,
+                          collection_date):
 
        for line in file:
             credential_instance = self.__extract_data(line=line.strip(' /\t\n'))
@@ -106,11 +113,14 @@ class Parser:
 
             if len(self.chunk) >= chunk_size:
                 self.database_operation.\
-                    bulk_operation_insert_execute(data=self.chunk)
+                    bulk_operation_insert_execute(
+                        data=self.chunk,
+                        group_name=group_name,
+                        collection_date=collection_date
+                    )
                 self.chunk = []
 
-    # Modo de parsing
-    # Com força bruta
+    # Identificação do modo a ser utilizado para o parsing
     def __extract_data(self, line) -> Optional[dict]:
         for i, re_compiled_pattern in enumerate(Parser.re_patterns):
 
@@ -126,7 +136,9 @@ class Parser:
 
         return None
 
-    def __extract_line_data(self, re_pattern_matcher: re.Pattern, line: str):
+    def __extract_line_data(self,
+                            re_pattern_matcher: re.Pattern,
+                            line: str):
 
         line_parsed = re_pattern_matcher.search(line)
         
@@ -196,6 +208,9 @@ class Parser:
         if '_' not in filename:
             return filename, ""
 
+        # Categoria_Nome-Grupo_data_hash
+        # Vamos extrair o Nome-Grupo e a data
+        # [Categoria, Nome-Grupo, Data, Hash]
         file_name_section_split = filename.split('_')
         group_name, collection_date = (file_name_section_split[1],
                                        file_name_section_split[2])

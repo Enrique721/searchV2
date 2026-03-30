@@ -1,10 +1,8 @@
 import os
-import sys
 import sqlite3
 from pathlib import Path
-from typing import Optional, Tuple, List
+from typing import Optional
 
-from src.db.db_query_builder import QueryBuilder
 from src.file_ops.file_operation import DirectoryOperation
 from src.default_config.default_config import config
 
@@ -61,7 +59,7 @@ class DatabaseConnection:
 
     @staticmethod
     def __pragma_config(cursor: sqlite3.Cursor):
-        cursor.execute("PRAGMA foreign_keys = ON")
+        cursor.execute("PRAGMA foreign_keys=ON")
         cursor.execute("PRAGMA journal_mode=wal")
         cursor.execute("PRAGMA synchronous=NORMAL")
         cursor.execute("PRAGMA temp_store=MEMORY")
@@ -102,7 +100,7 @@ class DatabaseConnection:
         cursor.execute("""
                        CREATE TABLE IF NOT EXISTS group_name(
                            group_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                           name TEXT NOT NULL,
+                           name TEXT NOT NULL UNIQUE,
                            UNIQUE(name)
                        )
                        """)
@@ -110,7 +108,7 @@ class DatabaseConnection:
         cursor.execute("""
                        CREATE TABLE IF NOT EXISTS tag(
                            tag_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                           name TEXT NOT NULL,
+                           name TEXT NOT NULL UNIQUE,
                            UNIQUE(name)
                        )
                        """)

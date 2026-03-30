@@ -1,8 +1,4 @@
-import os
-import sys
-import sqlite3
-from pathlib import Path
-from typing import Optional, Tuple, List
+from typing import Optional,List
 from src.default_config.default_config import config
 
 # Significado do arguments
