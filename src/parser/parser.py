@@ -39,22 +39,24 @@ class Parser:
         # <protocolo + URL, ?>(" " | ":")<USER | EMAIL>(" " | ":")<PASSWORD>
         # Adicionar suporte para o delimitador , e - <- Fase de refinamento
         re.compile(
-            r'^(?:([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s]+)\s*[:\s]+)?'
+            r'^(?!(?:link|url|site|user|login|email|username|password|pass)\s*:)'
+            r'(?:([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s]+)\s*[:\s]+)?'
             r'((?:\+?\d{1,3})?\d{8,15}|[a-zA-Z0-9._-]+(?:@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})?)'
             r'\s*[:\s]+\s*'
-            r'([^\s\x00-\x1F\x7F█╔╗╝╚═]+)$'
+            r'([^\s\x00-\x1F\x7F█╔╗╝╚═]+)$',
+            re.IGNORECASE
         ),
 
         
         # <Link: <URL>, ?, i>
         # <User: <USER | EMAIL>, i>
         # <Password: <PASSWORD>, i>
+        # Se achar a tag e completar um ciclo capturar o bloco e colocar no array de cred
         {
             BlockSegment.LINK: re.compile(r"(?i)^(link|url|site)\s*:\s*(.+)$"),
             BlockSegment.USER: re.compile(r"(?i)^(user|login|email|username)\s*:\s*(.+)$"),
             BlockSegment.PASSWORD: re.compile(r"(?i)^(password|pass)\s*:\s*(.+)$"),
         }
-
     ]
 
     def __init__(self,
@@ -96,7 +98,11 @@ class Parser:
             
             if len(self.chunk) != 0:
                 self.database_operation.\
-                    bulk_operation_insert_execute(data=self.chunk)
+                    bulk_operation_insert_execute(
+                        data=self.chunk,
+                        group_name=group_name,
+                        collection_date=collection_date
+                    )
 
         self.chunk = []
 
@@ -162,22 +168,25 @@ class Parser:
 
         for segment, pattern in re_pattern_matcher.items():
             matched = pattern.search(line)
-            if matched and matched.group(1):
-                if self.block_instance.get(segment.column) is not None:
-                    self.__add_block_data_to_chunk()
-                    
-                self.block_instance[segment.column] = matched.group(1).strip()
+            if not matched:
+                continue
+
+            if self.block_instance.get(segment.column) is not None:
+                self.__add_block_data_to_chunk()
+
+            data = matched.group(2).strip()
+            self.block_instance[segment.column] = data
         return None
 
     def __add_block_data_to_chunk(self):
         self.chunk.append(self.__credential_formatting(
-            url=self.block_instance.get("url"),
-            user=self.block_instance.get("user"),
-            password=self.block_instance.get("password"),
+            url=self.block_instance.get("url") if self.block_instance.get("url") else "",
+            user=self.block_instance.get("user") if self.block_instance.get("user") else "",
+            password=self.block_instance.get("password") if self.block_instance.get("password") else "",
             leak_date=None,
             group=None,
         ))
-        self.block_instance = {}
+        self.block_instance = ParseBlockData.generate_new_block()
         
     def __credential_formatting(
         self,
