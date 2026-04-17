@@ -5,7 +5,7 @@ from datetime import datetime
 import time
 import sys
 import os
-from typing import List, Optional, Tuple, Iterable
+from typing import List, Optional, Tuple
 
 WIDTH = 131
 

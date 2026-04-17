@@ -39,14 +39,16 @@ class Parser:
         # <protocolo + URL, ?>(" " | ":")<USER | EMAIL>(" " | ":")<PASSWORD>
         # Adicionar suporte para o delimitador , e - <- Fase de refinamento
         re.compile(
-            r'^(?!(?:link|url|site|user|login|email|username|password|pass)\s*:)'
-            r'(?:([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s]+)\s*[:\s]+)?'
-            r'((?:\+?\d{1,3})?\d{8,15}|[a-zA-Z0-9._-]+(?:@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})?)'
-            r'\s*[:\s]+\s*'
-            r'([^\s\x00-\x1F\x7F█╔╗╝╚═]+)$',
+            r"""(?ix)
+            ^(?!\s*(?:link|url|site|user|login|email|username|password|pass)\s*:)
+            (?:([a-zA-Z][a-zA-Z0-9+.-]*:\/\/.+?|www\.\S+?)\s*[:| ]\s*)?
+            ([^\s:|█╔╗╚╝═║]+)
+            \s*[:| ]\s*
+            ([^\s:|█╔╗╚╝═║]+)
+            \s*$
+            """,
             re.IGNORECASE
         ),
-
         
         # <Link: <URL>, ?, i>
         # <User: <USER | EMAIL>, i>
@@ -147,9 +149,15 @@ class Parser:
                             line: str):
 
         line_parsed = re_pattern_matcher.search(line)
+
         
         if line_parsed and len(line_parsed.groups()) > 0:
             url, user, password = line_parsed.groups()
+
+            if password is not None and password.startswith('//'):
+                if not re_pattern_matcher.match(password.lstrip('/ ')):
+                    return None
+ 
             url_parsed, status = UrlNormalization.normalization(url) if url else ('', False)
 
             credential_instance = self.__credential_formatting(

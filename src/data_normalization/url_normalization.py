@@ -14,7 +14,7 @@ class UrlNormalization(AccessCredentialNormalizationInterface):
 
         try:
             if "://" not in url:
-                parsed = urlparse("http://" + url)
+                parsed = urlparse("https://" + url)
                 scheme = ""
             else:
                 parsed = urlparse(url)
