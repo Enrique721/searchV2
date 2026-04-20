@@ -36,12 +36,18 @@ class Parser:
     # Expressão regular pre compiladas
     re_patterns = [
 
-        # <protocolo + URL, ?>(" " | ":")<USER | EMAIL>(" " | ":")<PASSWORD>
+        # <protocolo + URL, ?>(" " | ":" | "|")<USER | EMAIL>(" " | ":" | "|")<PASSWORD>
         # Adicionar suporte para o delimitador , e - <- Fase de refinamento
         re.compile(
             r"""(?ix)
             ^(?!\s*(?:link|url|site|user|login|email|username|password|pass)\s*:)
-            (?:([a-zA-Z][a-zA-Z0-9+.-]*:\/\/.+?|www\.\S+?)\s*[:| ]\s*)?
+            (?:
+                (
+                    (?:[a-zA-Z][a-zA-Z0-9+.-]*:\/\/.+?|www\.\S+?)
+                    (?::\d+)?
+                )
+                \s*[:| ]\s*
+            )?
             ([^\s:|█╔╗╚╝═║]+)
             \s*[:| ]\s*
             ([^\s:|█╔╗╚╝═║]+)
