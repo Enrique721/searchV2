@@ -31,7 +31,7 @@ class QueryBuilder:
     @staticmethod
     def search_query_template():
         return  """
-            SELECT c.*
+            SELECT c.url, c.username, c.password, c.registration_date
                 FROM credential c
                 JOIN credential_text_index f
                     ON c.cred_id = f.rowid
@@ -48,6 +48,12 @@ class QueryBuilder:
     ) -> List:
 
         params = []
+
+        if pattern is None or len(pattern.strip()) == 0:
+            return None
+
+        if '.' in pattern or ':' in pattern:
+            pattern = f'"{pattern}"'
 
         # Ambos falsos ou verdadeiros
         if url == username:

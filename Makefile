@@ -3,7 +3,7 @@ SRC_MAIN_REGISTER := src/cadastro.py
 SRC_MAIN_SEARCH := src/cli_consulta.py
 
 REGISTER_BINARY_NAME=cadastro
-SEARCH_BIANRY_NAME=cli_consulta
+SEARCH_BINARY_NAME=cli_consulta
 
 REGISTER_BINARY := dist/$(REGISTER_BINARY_NAME)
 SEARCH_BINARY := dist/$(SEARCH_BINARY_NAME)
@@ -15,6 +15,10 @@ $(REGISTER_BINARY): $(SRC_MAIN_REGISTER)
 
 $(SEARCH_BINARY): $(SRC_MAIN_SEARCH)
 	venv/bin/pyinstaller --onefile $(SRC_MAIN_SEARCH)
+
+all: $(REGISTER_BINARY) $(SEARCH_BINARY)
+
+re: clean all
 
 run-clean-register: clean $(REGISTER_BINARY)
 	./$(REGISTER_BINARY)

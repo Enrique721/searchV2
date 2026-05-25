@@ -5,21 +5,14 @@ from src.db.db_connection import DatabaseConnection
 from src.arg_parser.arg_parse import CMDArgumentParser
 from src.export.formatter import make_directory, export_data
 
-from typing import Optional, List
-
-import sqlite3
-import argparse
+import sys
 
 def main():
     parser_object = CMDArgumentParser()
     args = parser_object.get_args()
 
-    directory_operation = DirectoryOperation()
-    directory = directory_operation.create_directory(
-                         args.output if args.output else args.pattern
-                     )
-
     db_connection = DatabaseConnection()
+
 
     db_executor = DatabaseOperation(
                         db_connection,
@@ -35,6 +28,12 @@ def main():
         pattern=args.pattern,
         tags=args.tag
     )
+
+
+    directory_operation = DirectoryOperation()
+    directory = directory_operation.create_directory(
+                         args.output if args.output else args.pattern
+                     )
 
     export_data(
         directory=str(directory),

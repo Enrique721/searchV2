@@ -2,11 +2,6 @@ from src.db.db_connection import DatabaseConnection
 from src.db.db_query_builder import QueryBuilder, InsertionBuilder
 from src.default_config.default_config import config
 
-import os
-import sys
-import sqlite3
-
-from pathlib import Path
 from typing import Optional, Tuple, List, TypedDict
 
 class BulkCredentialInsertOperationItem(TypedDict):
@@ -74,6 +69,9 @@ class DatabaseOperation:
             pattern=pattern,
             tags=tags
         )
+
+        if params is None:
+            return []
 
         query_result = self.__query_execute_fetch(
             query_statement,

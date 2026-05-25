@@ -1,8 +1,6 @@
 from src.export.banner import banner
 from pathlib import Path
-import sqlite3
 from datetime import datetime
-import time
 import sys
 import os
 from typing import List, Optional, Tuple
@@ -64,7 +62,7 @@ def _export_row(
 
         if len(rows) == 0:
             f.write("-" * WIDTH + "\n")
-            f.write("Nada foi encontrado :)\n")
+            f.write("Nenhuma credencial encontrada...\n")
             f.write("-" * WIDTH + "\n")
             return
 
@@ -75,7 +73,7 @@ def _export_row(
                     f.write(f"url: {row[0]}\n")
                     f.write(f"username: {row[1]}\n")
                     f.write(f"password: {row[2]}\n")
-                    f.write(f"registration_date: {row[5]}\n")
+                    f.write(f"registration_date: {row[3]}\n")
 
                     u.write(f"{row[1]}\n")
                     p.write(f"{row[2]}\n")
