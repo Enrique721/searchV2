@@ -21,12 +21,6 @@ class CMDArgumentParser:
                 "help": "Buscar por usuário/email/número de celular/etc específico",
                 "action": "store_true"
             }),
-
-            # Se precisar por algum motivo, favor avisar
-            # (("-p", "--password"), {
-            #     "help": "Buscar por senha específica",
-            #     "action": "store_true"
-            # }),
         ]
 
         return cmd_flags

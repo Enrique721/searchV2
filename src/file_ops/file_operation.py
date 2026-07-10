@@ -32,7 +32,6 @@ class DirectoryOperation():
             return path_status
 
     def create_directory(self, path: str) -> pathlib.Path:
-
         if not self.check_directory(path):
             os.makedirs(path)
         return self.check_creation_directory(path)
