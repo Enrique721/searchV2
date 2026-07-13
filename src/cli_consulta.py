@@ -13,11 +13,14 @@ def main():
 
     db_connection = DatabaseConnection()
 
-
     db_executor = DatabaseOperation(
                         db_connection,
                         query_builder=QueryBuilder()
                     )
+
+    if len(args.pattern) == 1 and args.pattern == '/':
+        print("Invalid query param")
+        return
 
     print(f"Iniciando a busca por credenciais com a substring: {args.pattern}")
     query_result = db_executor.query_executor_search(

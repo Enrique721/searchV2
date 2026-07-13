@@ -77,7 +77,7 @@ class DatabaseOperation:
             query_statement,
             params
         )
-        
+
         return query_result
 
     def bulk_operation_insert_execute(self,
