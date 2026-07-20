@@ -222,9 +222,12 @@ class Parser:
                 }
 
     # Por favor colocar a data em formato padrão do ISO
+    # Valor de retorno group name e collection date
     def __get_group_name(self, file: str)-> Tuple[str, str]:
 
         base_file_name = os.path.basename(file)
+
+        # Remove extensão
         filename, _ = base_file_name.split('.')
 
         # Defaulting
@@ -235,6 +238,10 @@ class Parser:
         # Vamos extrair o Nome-Grupo e a data
         # [Categoria, Nome-Grupo, Data, Hash]
         file_name_section_split = filename.split('_')
+
+        if len(file_name_section_split) < 4:
+            return "Unknown", collection_date
+
         group_name, collection_date = (file_name_section_split[1],
                                        file_name_section_split[2])
 
