@@ -88,7 +88,13 @@ class Parser:
 
     def main_processing_method(self):
         for file in self.file_iterator:
+            print("----------------------------------------")
+            print("Processing: ", file)
+
             self.__process_file(file)
+
+            print("Processing Finished Processing: ", file)
+            print("----------------------------------------")
 
     def __process_file(self, file: str, chunk_size: int = MAX_CHUNK_SIZE):
         group_name, collection_date = self.__get_group_name(file)
