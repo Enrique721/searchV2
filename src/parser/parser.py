@@ -13,6 +13,7 @@ from enum import Enum
 class ParserType(Enum):
     LINE_PARSING = 0
     BLOCK_PARSING = 1
+    OK_MATCH_PARSING = 2
 
 class BlockSegment(Enum):
     LINK = 0
@@ -64,7 +65,10 @@ class Parser:
             BlockSegment.LINK: re.compile(r"(?i)^(link|url|site)\s*:\s*(.+)$"),
             BlockSegment.USER: re.compile(r"(?i)^(user|login|email|username)\s*:\s*(.+)$"),
             BlockSegment.PASSWORD: re.compile(r"(?i)^(password|pass)\s*:\s*(.+)$"),
-        }
+        },
+
+        # Username:password |(*)?+
+        re.compile(r'^([^:]+):\s*([^|]+?)\s*(?=\|)', re.IGNORECASE)
     ]
 
     def __init__(self,
@@ -151,6 +155,9 @@ class Parser:
             elif ParserType.BLOCK_PARSING.value == i:
                 res = self.__extract_block_data(re_compiled_pattern, line)
 
+            elif ParserType.OK_MATCH_PARSING.value == i:
+                res = self.__extract_line_data(re_compiled_pattern, line)
+
             if res is not None:
                 return res
 
@@ -161,10 +168,13 @@ class Parser:
                             line: str):
 
         line_parsed = re_pattern_matcher.search(line)
-
         
         if line_parsed and len(line_parsed.groups()) > 0:
-            url, user, password = line_parsed.groups()
+
+            if (len(line_parsed.groups()) == 2):
+                url, user, password = ("", *line_parsed.groups())
+            else:
+                url, user, password = line_parsed.groups()
 
             if password is not None and password.startswith('//'):
                 if not re_pattern_matcher.match(password.lstrip('/ ')):
