@@ -240,7 +240,7 @@ class Parser:
         file_name_section_split = filename.split('_')
 
         if len(file_name_section_split) < 4:
-            return "Unknown", collection_date
+            return "Unknown", datetime.datetime.now().date() 
 
         group_name, collection_date = (file_name_section_split[1],
                                        file_name_section_split[2])
