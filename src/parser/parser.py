@@ -243,12 +243,18 @@ class Parser:
 
         base_file_name = os.path.basename(file)
 
+        splitted_values = base_file_name.split('.')
+
+        if len(splitted_values) == 1:
+            return splitted_values[0], datetime.datetime.now().date()
+
+
         # Remove extensão
-        filename, _ = base_file_name.split('.')
+        filename, _ = (splitted_values[0], splitted_values[-1])
 
         # Defaulting
         if '_' not in filename:
-            return filename, ""
+            return filename, datetime.datetime.now().date()
 
         # Categoria_Nome-Grupo_data_hash
         # Vamos extrair o Nome-Grupo e a data
