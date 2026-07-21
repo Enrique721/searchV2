@@ -52,7 +52,7 @@ class QueryBuilder:
         if pattern is None or len(pattern.strip()) == 0:
             return None
 
-        if '.' in pattern or ':' in pattern or '/' in pattern:
+        if '.' in pattern or ':' in pattern or '/' in pattern or '@' in pattern:
             pattern = f'"{pattern}"'
 
         # Ambos falsos ou verdadeiros
